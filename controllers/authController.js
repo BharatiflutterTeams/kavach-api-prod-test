@@ -13,8 +13,6 @@ function logAndRespond(message, status, res, req, service, data = null) {
       path: req.path,
       service,
       method: req.method,
-      
-      
     },
   });
   return res.status(status).json({ message, data });
@@ -52,7 +50,7 @@ async function login(req, res) {
     const token = jwt.sign(
       { id: admin._id, username: admin.username },
       process.env.SECRET_KEY,
-      { expiresIn: "1h" }
+      { expiresIn: "3h" }
     );
 
     admin.token = token;

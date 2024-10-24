@@ -15,7 +15,7 @@ module.exports = (socket, io, employeeSockets, logger) => {
 
       employeeSocket.emit("change_wallpaper", imageUrl);
 
-      logger.info("Wallpaper change event emitted to:", employeeId);
+      logger.info("Wallpaper change event emitted to:", employeeSocket.id);
     } else {
       socket.emit("error", "Employee not connected");
     }
