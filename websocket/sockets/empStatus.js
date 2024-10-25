@@ -1,28 +1,21 @@
 module.exports = (socket, io, employeeSockets, logger, empLiveStatus) => {
+  // Function to update employee status
   function updateEmpLiveStatus(employeeId, status) {
-    // Find the employee in the array
-    const existingEmployee = empLiveStatus.find(
-      (emp) => emp.employeeId === employeeId
-    );
-
-    
-    if (existingEmployee) {
-      // If employee is found, update the status
-      existingEmployee.status = status;
-    } else {
-      // If not found, push a new employee status
-      empLiveStatus.push({ employeeId, status });
-    }
+    // Update the status in the empLiveStatus object
+    empLiveStatus[employeeId] = status;
+    logger.info(`Employee ${employeeId} status updated to ${status}`);
   }
 
+  // Handle receiving employee status updates
   socket.on("employeeStatus", (data) => {
     console.log(`Received employee status for employeeId ${data.employeeId}`);
 
     try {
       if (data.employeeId && data.status) {
-        // Store only the status as a string
-        employeeSockets[data.employeeId] = data.status;
+        // Store status for the employee in empLiveStatus
+        updateEmpLiveStatus(data.employeeId, data.status);
 
+        // Emit updated status to all connected clients
         io.emit("sendEmployeeStatus", {
           employeeId: data.employeeId,
           status: data.status,
@@ -39,31 +32,34 @@ module.exports = (socket, io, employeeSockets, logger, empLiveStatus) => {
     }
   });
 
-  // Handle client request for status
+  // Handle client request for system status
   socket.on("system_status", (data) => {
-    // empLiveStatus.push({ employeeId: 'DESKTOP-4KFM6A4', status: 'idle' });
+    // console.log("Received system status request for employee", data);
+    // Update employee's live status
     updateEmpLiveStatus(data.employeeId, data.status);
+    console.info(`Updated EMP LIVE STATUS: ${empLiveStatus}`);
 
-    console.log("EMP LIVE STATUS >>> ", empLiveStatus);
     try {
-      // const allEmployeeStatus = getAllEmpStatus(employeeSockets);
+      // Emit the status update to all clients
       io.emit("sendEmployeeStatus", data);
-      logger.info("Sent employee status to client", data);
+      logger.info(
+        "Sent EMP status to clients with WS >>>>",
+        data,
+        empLiveStatus
+      );
     } catch (error) {
-      logger.error("Error sending employee status to client:", error);
+      logger.error("Error sending employee status to clients:", error);
     }
   });
 
-  // function getAllEmpStatus(employeeSockets) {
-  //     const allEmployeeStatus = {};
-
-  //     for (const employeeId of Object.keys(employeeSockets)) {
-  //         allEmployeeStatus[employeeId] = {
-  //             status: employeeSockets[employeeId] || 'Unknown',
-  //         };
+  // Handle disconnect and update status
+  // socket.on("disconnect", () => {
+  //   Object.entries(employeeSockets).forEach(([employeeId, sock]) => {
+  //     if (sock === socket) {
+  //       updateEmpLiveStatus(employeeId, "inactive"); // Set status to inactive
+  //       delete employeeSockets[employeeId]; // Remove from active sockets
+  //       logger.info(`Employee ${employeeId} disconnected and set to inactive`);
   //     }
-  //     console.log("allEmployeeStatus", allEmployeeStatus);
-
-  //     return allEmployeeStatus;
-  // }
+  //   });
+  // });
 };

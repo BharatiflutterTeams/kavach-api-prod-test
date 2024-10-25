@@ -8,9 +8,13 @@ const handleKeyLogger = require("./sockets/keyLogger");
 const handleWallpaper = require("./sockets/wallpaper");
 const handleBrowserHistory = require("./sockets/internetHistory");
 const handleScreenshot = require("./sockets/screenshots");
+const empStatusOnRegister = require("./sockets/empStatusOnRegister");
+const restart = require("./sockets/restart");
 
 const employeeSockets = {};
-const empLiveStatus = [];
+const empLiveStatus = {}; // Object for easier status tracking
+
+let socket;
 
 // Set up logging with Winston
 const logger = winston.createLogger({
@@ -32,19 +36,33 @@ function socketServer(server) {
 
   // Handle connections
   io.on("connection", (socket) => {
-    logger.info(`New client connected: ${socket.id}`);
+    socket = socket;
+    logger.info("New client connected via Socket.io");
 
     // Register employee sockets
     socket.on("register", (employeeId) => {
       employeeSockets[employeeId] = socket;
+      empLiveStatus[employeeId] = "active"; // Set employee status to active
       logger.info(
-        `Employee ${employeeId} registered with socket ID ${socket.id}`
+        `Employee ${employeeId} registered and status set to >> ${empLiveStatus[employeeId]}`
       );
-      logConnectedClients();
+
+      let empStatus = "active";
+      empStatusOnRegister(io, employeeId, empStatus, logger);
+      // Log the list of currently connected employees
+      const connectedEmployees = Object.keys(employeeSockets);
+      logger.info(
+        `Connected employees: ${
+          connectedEmployees.length > 0 ? connectedEmployees.join(", ") : "None"
+        }`
+      );
+
+      // Log the full empLiveStatus object
+      logger.info("Current employee statuses:", empLiveStatus);
     });
 
-    // Register handlers
-    const handlers = [
+    // Call your specific handlers
+    [
       handleDownloadHistory,
       handleBrowserHistory,
       handleEmployeeStatus,
@@ -52,32 +70,38 @@ function socketServer(server) {
       handleKeyLogger,
       handleWallpaper,
       handleScreenshot,
-    ];
-
-    handlers.forEach((handler) =>
+    ].forEach((handler) =>
       handler(socket, io, employeeSockets, logger, empLiveStatus)
     );
 
     // Handle disconnect
     socket.on("disconnect", () => {
-      logger.info(`Client disconnected: ${socket.id}`);
+      logger.info("Client disconnected");
       Object.entries(employeeSockets).forEach(([employeeId, sock]) => {
         if (sock === socket) {
           delete employeeSockets[employeeId];
-          logger.info(`Employee ${employeeId} deregistered`);
-          logConnectedClients();
+          empLiveStatus[employeeId] = "inactive"; // Set employee status to inactive
+          logger.info(
+            `Employee ${employeeId} deregistered and status set to inactive >> ${empLiveStatus[employeeId]}`
+          );
+
+          let empStatus = "inactive";
+          empStatusOnRegister(io, employeeId, empStatus, logger);
         }
       });
+
+      // Log the list of currently connected employees
+      const connectedEmployees = Object.keys(employeeSockets);
+      logger.info(
+        `Connected employees: ${
+          connectedEmployees.length > 0 ? connectedEmployees.join(", ") : "None"
+        }`
+      );
+
+      // Log the full empLiveStatus object
+      logger.info("Current employee statuses:", empLiveStatus);
     });
   });
 }
 
-// Function to log currently connected clients
-function logConnectedClients() {
-  const connectedEmployees = Object.keys(employeeSockets);
-  logger.info(
-    `Currently connected employees: ${connectedEmployees.join(", ")}`
-  );
-}
-
-module.exports = { socketServer, employeeSockets };
+module.exports = { socketServer, employeeSockets, empLiveStatus, socket };
