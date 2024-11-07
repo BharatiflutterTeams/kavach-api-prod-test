@@ -54,6 +54,7 @@ if (cluster.isMaster) {
   app.use("/api", require("./routes/emailSettingsRoutes"));
   app.use("/api", require("./routes/featureRoutes"));
   app.use("/api/wallpaper", require("./routes/wallpaperRoutes"));
+  app.use("/api/version", require('./routes/versionRoutes'))
   // app.use('/api/userlocation',)
 
   app.use("/api/downloadHistory", require("./routes/downloadHistoryRoutes"));
