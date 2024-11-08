@@ -4,7 +4,6 @@ module.exports = (io, employeeId, empStatus, logger) => {
     io.emit("sendEmployeeStatus", {
       employeeId: employeeId,
       status: empStatus,
-      timestamp: Date.now(),
     });
     logger.info(
       `SENT EMP STATUS TO CLIENT ON REGISTER WS >> {employeeId: ${employeeId}, empStatus: ${empStatus}}`

@@ -34,13 +34,13 @@ if (cluster.isMaster) {
   app.use(bodyParser.json());
 
   // CORS Middleware
-  app.use(cors());
-
-  // {
-  //   origin: "http://localhost:3000", // Your frontend URL
-  //   methods: ["GET", "POST", "PUT", "DELETE"],
-  //   allowedHeaders: ["Content-Type", "Authorization"],
-  // }
+  app.use(
+    cors({
+      origin: "http://localhost:3000", // Your frontend URL
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
 
   app.get("/test", (req, res) => {
     console.log("api test");
@@ -54,7 +54,7 @@ if (cluster.isMaster) {
   app.use("/api", require("./routes/emailSettingsRoutes"));
   app.use("/api", require("./routes/featureRoutes"));
   app.use("/api/wallpaper", require("./routes/wallpaperRoutes"));
-  app.use("/api/version", require('./routes/versionRoutes'))
+  app.use("/api/version", require("./routes/versionRoutes"));
   // app.use('/api/userlocation',)
 
   app.use("/api/downloadHistory", require("./routes/downloadHistoryRoutes"));
