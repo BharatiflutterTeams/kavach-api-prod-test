@@ -9,7 +9,15 @@ const { socketServer } = require("./websocket/index");
 // Load environment variables
 const connectDB = require("./config/db"); // Adjust the path as necessary
 
-const PORT = process.env.PORT || 5000;
+//SSL Part Start//
+const https = require("node:https");
+const fs = require("node:fs");
+const privateKey = __dirname + "/ssl_key/privkey.pem";
+const fullChainKey = __dirname + "/ssl_key/fullchain.pem";
+
+//SSL Part end
+
+const Port = process.env.PORT || 9001;
 
 if (cluster.isMaster) {
   const numCPUs = os.cpus().length;
@@ -60,6 +68,23 @@ if (cluster.isMaster) {
   app.use("/api/downloadHistory", require("./routes/downloadHistoryRoutes"));
   app.use("/api/internetHistory", require("./routes/internetHistoryRoutes"));
 
+
+  // // ssl code start
+const options = {
+  key: fs.readFileSync(privateKey),
+  cert: fs.readFileSync(fullChainKey),
+  // key: fs.readFileSync("/etc/letsencrypt/live/bhartitextile.com/privkey.pem"),
+  // cert: fs.readFileSync("/etc/letsencrypt/live/bhartitextile.com/fullchain.pem")
+};
+
+https
+  .createServer(options, (req, res) => {
+    res.writeHead(200);
+    res.end("hello world\n");
+  })
+  .listen(547);
+// //SSL Part END//
+
   // Initialize Socket.io
   socketServer(server); // Pass the same server to Socket.io
 
@@ -72,10 +97,19 @@ if (cluster.isMaster) {
   // Connect to Database and Start the server
   connectDB()
     .then(() => {
-      server.listen(PORT, () => {
-        // Start the server here
-        console.log(`Worker ${process.pid} running on port ${PORT}`);
-      });
+
+            // //ssl listen port and application port  start
+const server = https.createServer(options, app);
+
+server.listen(Port, () => {
+  console.log(
+    `Server is listening on port ${Port} | Payment Gateway: ${process.env.PAYMENT_GATEWAY}`
+  );
+});
+
+//ssl listen port and application port  end
+
+
     })
     .catch((err) => {
       console.error("Database connection failed:", err);
