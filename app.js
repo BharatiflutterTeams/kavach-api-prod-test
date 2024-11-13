@@ -123,7 +123,7 @@ if (cluster.isMaster) {
   // Connect to Database and Start the server
   connectDB()
     .then(() => {
-      server.listen(PORT, () => {
+      server.listen(PORT, '0.0.0.0', () => {
         // Start the server here
         console.log(`Worker ${process.pid} running on port ${PORT}`);
       });
