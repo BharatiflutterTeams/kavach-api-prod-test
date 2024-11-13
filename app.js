@@ -47,7 +47,7 @@ if (cluster.isMaster) {
 
   // Body Parser Middleware
   app.use(bodyParser.json());
-  app.use(express.static(path.join(__dirname, "public")));
+  // app.use(express.static(path.join(__dirname, "public")));
 
   // CORS Middleware
   app.use(cors());
@@ -76,24 +76,24 @@ if (cluster.isMaster) {
 
   app.use("/api/downloadHistory", require("./routes/downloadHistoryRoutes"));
   app.use("/api/internetHistory", require("./routes/internetHistoryRoutes"));
-  app.all("/api/*", (req, res) => {
-    res.status(404).send({
-      status: "error",
-      msg: "please hit valid url",
-    });
-  });
+  // app.all("/api/*", (req, res) => {
+  //   res.status(404).send({
+  //     status: "error",
+  //     msg: "please hit valid url",
+  //   });
+  // });
 
   // Handle client-side routing, return all requests to the React app
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-  });
+  // app.get("*", (req, res) => {
+  //   res.sendFile(path.join(__dirname, "public", "index.html"));
+  // });
 
-  app.all("*", (req, res) => {
-    res.status(404).send({
-      status: "error",
-      msg: "please hit valid url",
-    });
-  });
+  // app.all("*", (req, res) => {
+  //   res.status(404).send({
+  //     status: "error",
+  //     msg: "please hit valid url",
+  //   });
+  // });
 
   // // ssl code start
   // const options = {
