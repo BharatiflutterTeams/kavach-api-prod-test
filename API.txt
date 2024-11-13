@@ -1,0 +1,76 @@
+*Create Admin: POST
+http://localhost:5000/api/create
+
+*Admin Login: POST
+http://localhost:5000/api/login
+
+----------------------------------------------------------
+
+*Create User: POST
+http://localhost:5000/api/users/create
+
+*Get User Data :Get
+http://localhost:5000/api/users/get
+
+*Get User Data By Id: Get
+http://localhost:5000/api/users/get/employeeId
+
+*update user by id:  PUT
+http://localhost:5000/api/users/update/employeeId
+
+*delete user by id: delete
+http://localhost:5000/api/users/delete/employeeId
+
+--------------------------------------------------------
+
+FEATURE
+
+*updtae feature by id: put
+http://localhost:5000/api/features/employeeId
+
+*get feature by id: get
+http://localhost:5000/api/features/employeeId
+
+--------------------------------------------------------
+
+Email Setting 
+
+*set email setting to particular user: POST
+http://localhost:5000/api/createEmail/employeeId
+
+*get email setting to particular user: get
+http://localhost:5000/api/getEmail/employeeId
+
+*update email setting to particular user: put
+http://localhost:5000/api/updateEmail/employeeId
+
+*delete email setting to particular user: delete
+http://localhost:5000/api/deleteEmail/employeeId
+
+---------------------------------------------------------------
+*****************API without token**************
+
+*Get User Data :Get
+http://localhost:5000/api/user/get
+
+*Get User Data By Id: Get
+http://localhost:5000/api/user/get/employeeId
+
+----------------------------------------------
+*get feature by id: get
+http://localhost:5000/api/feature/employeeId
+
+--------------------------------------------
+*get email setting to particular user: get
+http://localhost:5000/api/getEmails/employeeId
+
+
+*get download history by employeeId: get
+http://192.168.0.104:5001/api/downloadHistory/INT0006 for IP
+
+http://localhost/api/downloadHistory/INT0006
+
+
+*get Internet history by employeeId: get
+
+http://localhost/api/internetHistory/INT0006
