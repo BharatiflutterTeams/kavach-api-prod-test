@@ -40,6 +40,10 @@ if (cluster.isMaster) {
   const app = express();
   const http = require("http"); // HTTP server instance
   const server = http.createServer(app); // Create server from Express
+  
+  // Set server timeouts
+  server.keepAliveTimeout = 120000;  // 120 seconds
+  server.headersTimeout = 120000;
 
   // Body Parser Middleware
   app.use(bodyParser.json());
