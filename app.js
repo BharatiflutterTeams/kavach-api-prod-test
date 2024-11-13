@@ -46,7 +46,7 @@ if (cluster.isMaster) {
   // CORS Middleware
   app.use(
     cors({
-      origin: "*", // Your frontend URL
+      origin: "http://localhost:3000", // Your frontend URL
       methods: ["GET", "POST", "PUT", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
     })
