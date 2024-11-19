@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const logger = require("../logger/index");
 const { AUTH_CTRL_MSG } = require("../constant_message/constant");
+const { validationResult } = require("express-validator");
 
 require("dotenv").config();
 
@@ -20,10 +21,10 @@ function logAndRespond(message, status, res, req, service, data = null) {
 
 // =============================== LOGIN ADMIN ==============================
 async function login(req, res) {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const admin = await Admin.findOne({ username });
+    const admin = await Admin.findOne({ email });
 
     if (!admin) {
       return logAndRespond(
@@ -48,7 +49,7 @@ async function login(req, res) {
     }
 
     const token = jwt.sign(
-      { id: admin._id, username: admin.username },
+      { id: admin._id, email: admin.email },
       process.env.SECRET_KEY,
       { expiresIn: "8h" }
     );
@@ -65,7 +66,6 @@ async function login(req, res) {
       {
         token,
         expiresIn: "1 hour",
-        userInitials: admin.initials,
       }
     );
   } catch (error) {
@@ -81,29 +81,28 @@ async function login(req, res) {
 
 // ============================== CREATE ADMIN ===============================
 async function createAdmin(req, res) {
-  const { username, password } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { name, email, password } = req.body;
 
   try {
-    const existingAdmin = await Admin.findOne({ username });
-    if (existingAdmin) {
-      return logAndRespond(
-        AUTH_CTRL_MSG.ADMIN_ALREADY_EXISTS,
-        400,
-        res,
-        req,
-        "Admin_service"
-      );
-    }
-
+    // Generate salt and hash the password
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
+    // Create new Admin instance
     const newAdmin = new Admin({
-      username,
+      name,
+      email,
       password: hashPassword,
     });
 
+    // Save the admin to the database
     await newAdmin.save();
+
     return logAndRespond(
       AUTH_CTRL_MSG.ADMIN_CREATED,
       201,
@@ -112,6 +111,8 @@ async function createAdmin(req, res) {
       "Admin_service"
     );
   } catch (error) {
+    console.error("Error creating admin:", error);
+    logger.error("Error creating admin:", error);
     logAndRespond(
       AUTH_CTRL_MSG.INTERNAL_SERVER_ERROR,
       500,
@@ -121,6 +122,8 @@ async function createAdmin(req, res) {
     );
   }
 }
+
+
 
 // =============================== GET ALL ADMINS ============================
 async function getdata(req, res) {

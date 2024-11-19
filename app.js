@@ -5,11 +5,16 @@ const cors = require("cors");
 const os = require("os");
 const dotenv = require("dotenv");
 const { socketServer } = require("./websocket/index");
+const redisClient = require("./redis/redisConnection")
 
 // Load environment variables
 const connectDB = require("./config/db"); // Adjust the path as necessary
+const User = require("./models/User");
+const logger = require("./logger");
 
 const PORT = process.env.PORT || 5000;
+
+
 
 //SSL Part Start//
 // const https = require("node:https");
@@ -20,6 +25,20 @@ const PORT = process.env.PORT || 5000;
 //SSL Part end
 
 const Port = process.env.PORT || 9001;
+const USER_CACHE_KEY = 'all_users';
+
+User.watch().on('change', async (change) => {
+  if (['insert', 'update', 'replace', 'delete'].includes(change.operationType)) {
+
+    // Fetch the latest user list from the DB
+    const users = await User.find().populate("featureSettings");
+
+    // Update Redis cache
+    await redisClient.set(USER_CACHE_KEY, JSON.stringify(users));
+    console.log("Updated Redis cache for users");
+    logger.info("Updated Redis cache for users");
+  }
+});
 
 if (cluster.isMaster) {
   const numCPUs = os.cpus().length;
@@ -71,22 +90,21 @@ if (cluster.isMaster) {
   app.use("/api/downloadHistory", require("./routes/downloadHistoryRoutes"));
   app.use("/api/internetHistory", require("./routes/internetHistoryRoutes"));
 
-
   // // ssl code start
-// const options = {
-//   key: fs.readFileSync(privateKey),
-//   cert: fs.readFileSync(fullChainKey),
-//   // key: fs.readFileSync("/etc/letsencrypt/live/bhartitextile.com/privkey.pem"),
-//   // cert: fs.readFileSync("/etc/letsencrypt/live/bhartitextile.com/fullchain.pem")
-// };
+  // const options = {
+  //   key: fs.readFileSync(privateKey),
+  //   cert: fs.readFileSync(fullChainKey),
+  //   // key: fs.readFileSync("/etc/letsencrypt/live/bhartitextile.com/privkey.pem"),
+  //   // cert: fs.readFileSync("/etc/letsencrypt/live/bhartitextile.com/fullchain.pem")
+  // };
 
-// https
-//   .createServer(options, (req, res) => {
-//     res.writeHead(200);
-//     res.end("hello world\n");
-//   })
-//   .listen(547);
-// //SSL Part END//
+  // https
+  //   .createServer(options, (req, res) => {
+  //     res.writeHead(200);
+  //     res.end("hello world\n");
+  //   })
+  //   .listen(547);
+  // //SSL Part END//
 
   // Initialize Socket.io
   socketServer(server); // Pass the same server to Socket.io
@@ -100,13 +118,13 @@ if (cluster.isMaster) {
   // Connect to Database and Start the server
   connectDB()
     .then(() => {
-      server.listen(PORT, () => {
+      server.listen(PORT, '0.0.0.0', () => {
         // Start the server here
         console.log(`Worker ${process.pid} running on port ${PORT}`);
       });
     })
     .catch((err) => {
-      console.error("Database connection failed:", err);
+      logger.error("Database connection failed:", err);
       process.exit(1);
     });
 }

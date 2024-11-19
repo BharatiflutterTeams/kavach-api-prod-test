@@ -10,6 +10,8 @@ const handleBrowserHistory = require("./sockets/internetHistory");
 const handleScreenshot = require("./sockets/screenshots");
 const empStatusOnRegister = require("./sockets/empStatusOnRegister");
 const restart = require("./sockets/restart");
+const { getRedisData, setRedisData } = require("../redis/redisFunctions");
+const { EMPLOYEE_STATUSES_KEY } = require("../redis/redisKeys");
 
 const employeeSockets = {};
 const empLiveStatus = {}; // Object for easier status tracking
@@ -42,6 +44,7 @@ function socketServer(server) {
     // Register employee sockets
     socket.on("register", (employeeId) => {
       employeeSockets[employeeId] = socket;
+      console.log("employeeSockets on register:", employeeSockets);
       empLiveStatus[employeeId] = "active"; // Set employee status to active
       logger.info(
         `Employee ${employeeId} registered and status set to >> ${empLiveStatus[employeeId]}`
@@ -77,16 +80,24 @@ function socketServer(server) {
     // Handle disconnect
     socket.on("disconnect", () => {
       logger.info("Client disconnected");
-      Object.entries(employeeSockets).forEach(([employeeId, sock]) => {
+      Object.entries(employeeSockets).forEach(async([employeeId, sock]) => {
         if (sock === socket) {
           delete employeeSockets[employeeId];
-          empLiveStatus[employeeId] = "inactive"; // Set employee status to inactive
+          empLiveStatus[employeeId] = "deactivated"; // Set employee status to inactive
           logger.info(
             `Employee ${employeeId} deregistered and status set to inactive >> ${empLiveStatus[employeeId]}`
           );
+          let employeeStatuses = await getRedisData(EMPLOYEE_STATUSES_KEY);
+        employeeStatuses = employeeStatuses ? employeeStatuses : {};
 
-          let empStatus = "inactive";
-          empStatusOnRegister(io, employeeId, empStatus, logger);
+          // let empStatus = "deactivated";
+          // empStatusOnRegister(io, employeeId, empStatus, logger);
+          io.emit("sendEmployeeStatus", {
+            employeeId: employeeId,
+            status: 'deactivated',
+          });
+          employeeStatuses[employeeId] = 'deactivated';
+          await setRedisData(EMPLOYEE_STATUSES_KEY, employeeStatuses);
         }
       });
 

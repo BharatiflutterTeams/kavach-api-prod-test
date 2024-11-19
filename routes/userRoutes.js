@@ -8,9 +8,9 @@ const {
   getUserById,
 } = require("../controllers/userController");
 const { verifyToken } = require("../middleware/authMiddleware");
-
+const cacheMiddleware = require("../redis/getCacheMiddleware")
 // User routes
-router.get("/alluser", verifyToken, getUser);
+router.get("/alluser", verifyToken, cacheMiddleware, getUser);
 router.get("/employee/:employeeId", verifyToken, getUserById);
 router.post("/create", verifyToken, createUser);   
 router.put("/update/:employeeId", verifyToken, updateUser);

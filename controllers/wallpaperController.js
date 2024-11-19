@@ -20,7 +20,7 @@ const createWallpaper = async (req, res) => {
         .end(file.buffer);
     });
 
-    console.log("responseURL", responseURL.secure_url);
+    logger.info("responseURL", responseURL.secure_url);
 
     const wallpaper = await User.findOneAndUpdate(
       { employeeId },

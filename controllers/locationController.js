@@ -390,4 +390,74 @@ const getLocationsByEmployeeId = async (req, res) => {
   }
 };
 
-module.exports = { saveLocation, getLocationsByEmployeeId };
+const getAllUsersLocations = async (req, res) => {
+  logger.info("Received request to fetch all users' location data.", {
+    metaData: {
+      Path: req.path,
+      Service: "Location_service",
+      Method: req.method,
+    },
+  });
+
+  try {
+    // Fetch all location data with user details
+    const locations = await Location.find()
+      .populate("employeeId", "name email")  // Populate user details such as name and email
+      .exec();
+
+    if (locations.length === 0) {
+      logger.info("No location data found for any employee.", {
+        metaData: {
+          Path: req.path,
+          Service: "Location_service",
+          Method: req.method,
+        },
+      });
+
+      return logAndRespond(
+        "No location data found for any employee.",
+        404,
+        res,
+        req,
+        "Location_service"
+      );
+    }
+
+    logger.info("All users' location data fetched successfully.", {
+      metaData: {
+        Path: req.path,
+        Service: "Location_service",
+        Method: req.method,
+      },
+    });
+
+    return logAndRespond(
+      "All users' location data fetched successfully.",
+      200,
+      res,
+      req,
+      "Location_service",
+      locations
+    );
+  } catch (error) {
+    logger.error("Error fetching all users' location data.", {
+      metaData: {
+        Path: req.path,
+        Service: "Location_service",
+        Method: req.method,
+      },
+      error: error.message,
+    });
+
+    return logAndRespond(
+      "Error fetching all users' location data",
+      500,
+      res,
+      req,
+      "Location_service"
+    );
+  }
+};
+
+
+module.exports = { saveLocation, getLocationsByEmployeeId, getAllUsersLocations  };

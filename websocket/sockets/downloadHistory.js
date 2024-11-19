@@ -3,9 +3,11 @@ module.exports = (socket, io, employeeSockets, logger) => {
   socket.on("getDownloadHistory", (employeeId) => {
     const employeeSocket = employeeSockets[employeeId];
     console.log("Requesting download history for Employee ID:", employeeId);
+    console.log("employee socket from download history:", employeeSocket);
+    
 
     if (employeeSocket) {
-      logger.info(`Requesting download history for Employee: ${employeeId}`);
+      logger.info(`Requesting download history for Employee:  ${employeeId} to python agent`);
       //fetch data from python
       employeeSocket.emit("fetchDownloadHistory");
     } else {
@@ -14,7 +16,7 @@ module.exports = (socket, io, employeeSockets, logger) => {
   });
 
   socket.on("downloadHistory", async (data) => {
-    logger.info(`Received download history from Agent >>${data.employeeId}`);
+    logger.info(`Received download histo  ry from Agent >>${data.employeeId}`);
 
     if (data && data.data && data.employeeId) {
       const formattedData = {

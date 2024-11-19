@@ -1,9 +1,14 @@
 const User = require("../models/User");
 const Feature = require("../models/Feature");
 const logger = require("../logger/index");
-const { logAndRespond } = require("../utils/responseUtils"); // Importing helper function
+const { logAndRespond } = require("../utils/responseUtils"); 
 const { USER_CTRL } = require("../constant_message/constant");
 const { empLiveStatus } = require("../websocket/index");
+const redisClient = require("../redis/redisConnection")
+const USER_CACHE_KEY = require("../redis/redisKeys")
+const {setRedisData} = require("../redis/redisFunctions");
+
+const CACHE_EXPIRY = 3600;
 
 // ========================== CREATE USER ================================
 
@@ -135,28 +140,16 @@ async function deleteUser(req, res) {
 async function getUser(req, res) {
   try {
     const users = await User.find().populate("featureSettings");
-
     if (!users || users.length === 0) {
       return logAndRespond("No users found", 404, res, req, "User_Controller");
     }
-    // console.log(`SENDING USER DATA >>> ${empLiveStatus["DESKTOP-QOOPHHU"]}`);
+    console.log("Fetched from DB");
+    await setRedisData(USER_CACHE_KEY, users);
+    console.log("Data cached in Redis");
 
-    // const userAndLiveStatus = users.map((user) => {
-    //   user.status = empLiveStatus[user.employeeId];
-    //   console.log(user.employeeId, "=>", user.status);
-    // });
-
-    return logAndRespond(
-      "Success",
-      200,
-      res,
-      req,
-      "User_Controller",
-      users
-      // empLiveStatus
-    );
+    return logAndRespond("Success (from DB)", 200, res, req, "User_Controller", users);
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching users:", error);
     logAndRespond("Server Error", 500, res, req, "User_Controller");
   }
 }
