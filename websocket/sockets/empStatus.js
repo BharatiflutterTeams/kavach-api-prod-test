@@ -20,7 +20,6 @@ module.exports = (socket, io, employeeSockets, logger, empLiveStatus) => {
         updateEmpLiveStatus(data.employeeId, data.status);
 
         // Emit updated status to all connected clients
-
         console.log("Sent employee status to all connected clients", {
           employeeId: data.employeeId,
           status: data.status,

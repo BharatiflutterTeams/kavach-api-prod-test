@@ -16,7 +16,7 @@ module.exports = (socket, io, employeeSockets, logger) => {
   });
 
   socket.on("downloadHistory", async (data) => {
-    logger.info(`Received download histo  ry from Agent >>${data.employeeId}`);
+    logger.info(`Received download history from Agent >>${data.employeeId}`);
 
     if (data && data.data && data.employeeId) {
       const formattedData = {

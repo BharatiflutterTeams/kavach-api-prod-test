@@ -70,6 +70,23 @@ if (cluster.isMaster) {
       allowedHeaders: ["Content-Type", "Authorization"],
     })
   );
+  
+  // Set server timeouts
+  server.keepAliveTimeout = 120000;  // 120 seconds
+  server.headersTimeout = 120000;
+
+  // Body Parser Middleware
+  app.use(bodyParser.json());
+  // app.use(express.static(path.join(__dirname, "public")));
+
+  // CORS Middleware
+  app.use(cors());
+
+  // {
+  //   origin: "*", // Your frontend URL
+  //   methods: ["GET", "POST", "PUT", "DELETE"],
+  //   allowedHeaders: ["Content-Type", "Authorization"],
+  // }
 
   app.get("/test", (req, res) => {
     console.log("api test");

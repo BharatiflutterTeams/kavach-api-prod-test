@@ -29,7 +29,7 @@ const logger = winston.createLogger({
 function socketServer(server) {
   const io = new Server(server, {
     cors: {
-      origin: "*",
+      origin: ["https://new-kavach-dashboard-test.onrender.com", "http://localhost:3000"],
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -44,7 +44,6 @@ function socketServer(server) {
     // Register employee sockets
     socket.on("register", (employeeId) => {
       employeeSockets[employeeId] = socket;
-      console.log("employeeSockets on register:", employeeSockets);
       empLiveStatus[employeeId] = "active"; // Set employee status to active
       logger.info(
         `Employee ${employeeId} registered and status set to >> ${empLiveStatus[employeeId]}`
