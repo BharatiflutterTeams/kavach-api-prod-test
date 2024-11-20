@@ -10,7 +10,7 @@ module.exports = (socket, io, employeeSockets, logger) => {
     // employeeSocketStatus = employeeSocketStatus ? employeeSocketStatus : {};
  
     // let employeeSocketRedis = employeeSocketStatus[employeeId];
-   const employeeSocketRedis = getEmployeeSocketStatus(employeeId);
+   const employeeSocketRedis =await getEmployeeSocketStatus(employeeId);
     console.log("Requesting download history for Employee ID:", employeeId, employeeSocketRedis);
     // console.log("employee socket from download history:", employeeSocket); 
     
