@@ -11,7 +11,7 @@ const handleScreenshot = require("./sockets/screenshots");
 const empStatusOnRegister = require("./sockets/empStatusOnRegister");
 const restart = require("./sockets/restart");
 const { getRedisData, setRedisData } = require("../redis/redisFunctions");
-const { EMPLOYEE_STATUSES_KEY } = require("../redis/redisKeys");
+const { EMPLOYEE_STATUSES_KEY, EMPLOYEE_SOCKET_KEY } = require("../redis/redisKeys");
 
 const employeeSockets = {};
 const empLiveStatus = {}; // Object for easier status tracking
@@ -42,12 +42,19 @@ function socketServer(server) {
     logger.info("New client connected via Socket.io");
 
     // Register employee sockets
-    socket.on("register", (employeeId) => {
+    socket.on("register", async(employeeId) => {
       employeeSockets[employeeId] = socket;
+
       empLiveStatus[employeeId] = "active"; // Set employee status to active
       logger.info(
-        `Employee ${employeeId} registered and status set to >> ${empLiveStatus[employeeId]}`
+        `Employee ${employeeId} registered and status set to >> ${empLiveStatus[employeeId]} and socket id is ${socket.id}`
       );
+      let employeeStatuses = await getRedisData(EMPLOYEE_SOCKET_KEY);
+      employeeStatuses = employeeStatuses ? employeeStatuses : {};
+
+      employeeStatuses[employeeId] = socket?.id;
+
+      await setRedisData(EMPLOYEE_SOCKET_KEY, employeeStatuses);
 
       let empStatus = "active";
       empStatusOnRegister(io, employeeId, empStatus, logger);
@@ -82,7 +89,7 @@ function socketServer(server) {
       Object.entries(employeeSockets).forEach(async([employeeId, sock]) => {
         if (sock === socket) {
           delete employeeSockets[employeeId];
-          empLiveStatus[employeeId] = "deactivated"; // Set employee status to inactive
+          empLiveStatus[employeeId] = "deactivated"; // Set employee status to deactivated
           logger.info(
             `Employee ${employeeId} deregistered and status set to inactive >> ${empLiveStatus[employeeId]}`
           );

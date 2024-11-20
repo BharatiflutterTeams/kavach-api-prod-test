@@ -1,18 +1,36 @@
+const { getEmployeeSocketStatus } = require("../../redis/getSocketId");
+const { getRedisData } = require("../../redis/redisFunctions");
+const { EMPLOYEE_SOCKET_KEY } = require("../../redis/redisKeys");
 const { DownloadHistory } = require("../model/models");
 module.exports = (socket, io, employeeSockets, logger) => {
-  socket.on("getDownloadHistory", (employeeId) => {
+  socket.on("getDownloadHistory", async(employeeId) => {
+    // console.log("employee socket from download history before selcting:", employeeSockets);
     const employeeSocket = employeeSockets[employeeId];
-    console.log("Requesting download history for Employee ID:", employeeId);
-    console.log("employee socket from download history:", employeeSocket);
+    // let employeeSocketStatus = await getRedisData(EMPLOYEE_SOCKET_KEY);
+    // employeeSocketStatus = employeeSocketStatus ? employeeSocketStatus : {};
+ 
+    // let employeeSocketRedis = employeeSocketStatus[employeeId];
+   const employeeSocketRedis = getEmployeeSocketStatus(employeeId);
+    console.log("Requesting download history for Employee ID:", employeeId, employeeSocketRedis);
+    // console.log("employee socket from download history:", employeeSocket); 
     
+    // console.log("employee socket from download history after selcting:", employeeSocketRedis);
+if (employeeSocketRedis) {
+    const es = io.sockets.sockets.get(employeeSocketRedis);
+    if (es) {
+        es.emit("fetchDownloadHistory");
+        logger.info(`Event emitted to Employee ${employeeId}`);
+    } 
 
-    if (employeeSocket) {
-      logger.info(`Requesting download history for Employee:  ${employeeId} to python agent`);
-      //fetch data from python
-      employeeSocket.emit("fetchDownloadHistory");
-    } else {
-      socket.emit("error", "Employee not connected");
-    }
+}
+
+    // if (employeeSocket) {
+    //   logger.info(`Requesting download history for Employee:  ${employeeId} to python agent`);
+    //   //fetch data from python
+    //   employeeSocket.emit("fetchDownloadHistory");
+    // } else {
+    //   socket.emit("error", "Employee not connected");
+    // }
   });
 
   socket.on("downloadHistory", async (data) => {
