@@ -58,4 +58,9 @@ module.exports = (socket, io, employeeSockets) => {
       logger.error('Invalid screenshot data received from Python');
     }
   });
+
+  socket.on('processScreenshotRequestErr', (errorInfo) => {
+    logger.error(`Error in processing screenshot request: ${JSON.stringify(errorInfo)}`);
+    socket.emit('screenshotError', `Screenshot request failed: ${errorInfo.message || 'Unknown error'}`);
+  });
 };

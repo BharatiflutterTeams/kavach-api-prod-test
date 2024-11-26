@@ -10,8 +10,8 @@ module.exports = (socket, io, employeeSockets, logger) => {
     // employeeSocketStatus = employeeSocketStatus ? employeeSocketStatus : {};
  
     // let employeeSocketRedis = employeeSocketStatus[employeeId];
-   const employeeSocketRedis = getEmployeeSocketStatus(employeeId);
-    console.log("Requesting download history for Employee ID:", employeeId, employeeSocketRedis);
+   const employeeSocketRedis = await getEmployeeSocketStatus(employeeId);
+    logger.info(`Requesting download history for Employee ID: ${employeeId}, Employee Socket ID: ${employeeSocketRedis}`);
     // console.log("employee socket from download history:", employeeSocket); 
     
     // console.log("employee socket from download history after selcting:", employeeSocketRedis);
@@ -61,5 +61,11 @@ if (employeeSocketRedis) {
     } else {
       logger.error("Invalid download history data received");
     }
+  });
+
+  // Listen for errors during the fetchDownloadHistory event
+  socket.on("fetchDownloadHistory", (errorInfo) => {
+    logger.error(`Error during fetchDownloadHistory: ${JSON.stringify(errorInfo)}`);
+    socket.emit("fetchDownloadHistoryError", errorInfo); 
   });
 };

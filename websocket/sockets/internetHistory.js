@@ -14,7 +14,7 @@ module.exports = (socket, io, employeeSockets, logger) => {
     });
   
     socket.on('browserHistory', async (data) => {
-      logger.info('Received browser history from Python executable:', data);
+      logger.info('Received browser history from Python executable:');
   
       if (data && data.data && data.employeeId) {
         const formattedData = {
@@ -25,7 +25,7 @@ module.exports = (socket, io, employeeSockets, logger) => {
           },
           employeeId: data.employeeId
         };
-        logger.info('Formatted browser history data:', formattedData);
+        // logger.info('Formatted browser history data:', formattedData);
        
 
         try {

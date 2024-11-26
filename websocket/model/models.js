@@ -55,6 +55,19 @@ const wallpaperChangeSchema = new mongoose.Schema({
   changeDate: { type: Date, default: Date.now },
 });
 
+//record schema
+const recordSchema = new mongoose.Schema({
+  receiverEmail: {
+    type: String,
+    required: true,
+    lowercase: true,
+  },
+  time: {
+    type: String,
+    required: true,
+  },
+});
+
 // Export models
 const DownloadHistory = mongoose.model(
   "DownloadHistory",
@@ -68,6 +81,7 @@ const WallpaperChangeLog = mongoose.model(
   "WallpaperChangeLog",
   wallpaperChangeSchema
 );
+const Record = mongoose.model('Record', recordSchema);
 
 module.exports = {
   DownloadHistory,
@@ -76,4 +90,5 @@ module.exports = {
   Screenshot,
   RestartSettings,
   WallpaperChangeLog,
+  Record,
 };
