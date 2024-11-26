@@ -63,13 +63,13 @@ if (cluster.isMaster) {
   app.use(bodyParser.json());
 
   // CORS Middleware
-  // app.use(
-  //   cors({
-  //     origin: "*", // Your frontend URL
-  //     methods: ["GET", "POST", "PUT", "DELETE"],
-  //     allowedHeaders: ["Content-Type", "Authorization"],
-  //   })
-  // );
+  app.use(
+    cors({
+      origin: "*", // Your frontend URL
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
   
   // Set server timeouts
   server.keepAliveTimeout = 120000;  // 120 seconds
@@ -80,7 +80,7 @@ if (cluster.isMaster) {
   // app.use(express.static(path.join(__dirname, "public")));
 
   // CORS Middleware
-  app.use(cors());
+  // app.use(cors());
 
   // {
   //   origin: "*", // Your frontend URL
