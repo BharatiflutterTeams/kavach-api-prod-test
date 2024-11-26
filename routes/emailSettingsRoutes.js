@@ -4,6 +4,7 @@ const {
   getEmailSettingsForUser,
   setEmailSettingsForUser,
   updateEmailSettingsForUser,
+  updateEmailSettingsForAllUsers,
   deleteUser,
 } = require("../controllers/emailSettingsController");
 const { verifyToken } = require("../middleware/authMiddleware");
@@ -14,5 +15,5 @@ router.route("/email/:employeeId")
   .post(verifyToken, setEmailSettingsForUser)   // Create email settings
   .put(verifyToken, updateEmailSettingsForUser) // Update email settings
   .delete(verifyToken, deleteUser);             // Delete email settings
-
+  router.put("/email/update/all", verifyToken, updateEmailSettingsForAllUsers); 
 module.exports = router;
