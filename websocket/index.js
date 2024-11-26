@@ -29,7 +29,8 @@ const logger = winston.createLogger({
 function socketServer(server) {
   const io = new Server(server, {
     cors: {
-      origin: ["https://new-kavach-dashboard-test.onrender.com", "http://localhost:3000", "https://kavach-api-prod-test-z1x4.onrender.com"],
+      // origin: ["https://new-kavach-dashboard-test.onrender.com", "http://localhost:3000", "https://kavach-api-prod-test-z1x4.onrender.com"],
+      origin:"*",
       methods: ["GET", "POST"],
       credentials: true,
     },
